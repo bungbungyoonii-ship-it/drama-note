@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📓 드라마 기록노트</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text2: #6b6b65;
+    --text3: #9a9a94;
+    --accent: #2a2a28;
+    --gold: #c8860a;
+    --gold-bg: #fdf3e0;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Layout */
+  .app { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  /* Header */
+  .header { margin-bottom: 2rem; }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  /* Search */
+  .search-box { display: flex; gap: 8px; margin-bottom: .5rem; }
+  .search-box input {
+    flex: 1; padding: 10px 14px; font-size: 14px; font-family: inherit;
+    border: 1px solid var(--border2); border-radius: var(--radius);
+    background: var(--surface); color: var(--text); outline: none;
+    transition: border-color .15s;
+  }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box input::placeholder { color: var(--text3); }
+  .btn {
+    padding: 10px 18px; font-size: 13px; font-weight: 500; font-family: inherit;
+    border: 1px solid var(--border2); border-radius: var(--radius);
+    background: var(--accent); color: #fff; cursor: pointer; white-space: nowrap;
+    transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn-ghost {
+    background: var(--surface); color: var(--text2);
+  }
+  .btn-ghost:hover { background: var(--surface2); opacity: 1; }
+
+  .status { font-size: 12px; color: var(--text3); min-height: 18px; margin-bottom: .75rem; }
+
+  /* Results */
+  .results { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.5rem; }
+  .result-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    transition: border-color .15s;
+  }
+  .result-item:hover { border-color: var(--border2); }
+  .r-thumb {
+    width: 40px; height: 56px; border-radius: 5px;
+    object-fit: cover; background: var(--surface2);
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 20px; overflow: hidden;
+  }
+  .r-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
+  .r-info { flex: 1; min-width: 0; }
+  .r-title { font-size: 14px; font-weight: 500; }
+  .r-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .r-add {
+    font-size: 12px; padding: 5px 12px;
+    border: 1px solid var(--border2); border-radius: 20px;
+    background: none; color: var(--text2); cursor: pointer; white-space: nowrap;
+    transition: all .15s; flex-shrink: 0;
+  }
+  .r-add:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .r-add:disabled { opacity: .4; cursor: default; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem; }
+  .tab {
+    font-size: 13px; font-weight: 500; padding: 8px 16px; cursor: pointer;
+    color: var(--text3); border: none; background: none;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s;
+    font-family: inherit;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  .sec { display: none; }
+  .sec.active { display: block; }
+
+  /* OTT filter */
+  .ott-filter { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+  .ott-filter-label { font-size: 12px; color: var(--text2); }
+  .ott-pill {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; padding: 4px 10px; border-radius: 20px;
+    border: 1px solid var(--border); background: none; color: var(--text2);
+    cursor: pointer; transition: all .15s; font-family: inherit;
+  }
+  .ott-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .ott-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Work cards */
+  .works-list { display: flex; flex-direction: column; }
+  .work-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .work-item:last-child { border-bottom: none; }
+  .w-poster {
+    width: 48px; height: 68px; border-radius: 6px;
+    object-fit: cover; background: var(--surface2);
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 24px; overflow: hidden;
+  }
+  .w-poster img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+  .w-info { flex: 1; min-width: 0; }
+  .w-title { font-size: 14px; font-weight: 700; }
+  .w-orig { font-size: 12px; color: var(--text2); font-weight: 400; margin-left: 5px; }
+  .w-meta { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .w-crew { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+  .crew-group { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; min-width: 0; }
+  .crew-group-label {
+    font-size: 10px; color: var(--text3); width: 26px; flex-shrink: 0;
+    font-weight: 500;
+  }
+  .crew-tag {
+    font-size: 11px; padding: 2px 9px; border-radius: 20px;
+    cursor: pointer; border: none; font-family: inherit;
+    transition: opacity .15s;
+  }
+  .crew-tag:hover { opacity: .75; }
+  .ott-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .ott-badge {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 11px; padding: 2px 9px; border-radius: 20px;
+    border: 1px solid var(--border); color: var(--text2); text-decoration: none;
+    transition: all .15s;
+  }
+  .ott-badge:hover { border-color: var(--border2); color: var(--text); }
+  .ott-badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+
+
+  /* 2-column layout */
+  .work-body { display: flex; gap: 14px; margin-top: 6px; }
+  .work-col-left { flex: 1.2; min-width: 0; }
+  .work-col-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .work-full { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  /* My Record */
+  .my-record { margin-top: 9px; display: flex; flex-direction: column; gap: 6px; }
+  .record-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .record-label { font-size: 11px; color: var(--text3); width: 34px; flex-shrink: 0; }
+  .status-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+  .status-btn {
+    font-size: 11px; padding: 2px 9px; border-radius: 20px;
+    border: 1px solid var(--border); background: none; color: var(--text2);
+    cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap;
+  }
+  .status-btn.active-봤음 { background: #dff5e4; color: #1a5c2a; border-color: #a8ddb5; }
+  .status-btn.active-보는중 { background: #deeeff; color: #0a4a8a; border-color: #a0c8f0; }
+  .status-btn.active-보고싶음 { background: #fff3d8; color: #7a4a00; border-color: #f0d090; }
+  .star-row { display: flex; gap: 1px; }
+  .star-btn { font-size: 15px; background: none; border: none; cursor: pointer; line-height: 1; padding: 1px; color: #ddd; transition: color .1s; }
+  .star-btn.on { color: #e8a020; }
+  .date-input {
+    font-size: 11px; padding: 2px 8px; font-family: inherit;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); outline: none; width: 130px;
+  }
+  .date-input:focus { border-color: var(--border2); }
+  .memo-input {
+    width: 100%; font-size: 12px; font-family: inherit; padding: 5px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); resize: none; height: auto; min-height: 46px; outline: none; overflow: hidden;
+  }
+  .memo-input:focus { border-color: var(--border2); }
+  .memo-save-btn {
+    align-self: flex-start; font-size: 11px; padding: 3px 12px;
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    background: none; cursor: pointer; color: var(--text2); font-family: inherit;
+  }
+  .memo-save-btn:hover { background: var(--surface2); }
+  .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .analysis-item { display: flex; flex-direction: column; gap: 3px; }
+  .analysis-label { font-size: 10px; font-weight: 500; color: var(--text3); }
+  .analysis-input {
+    width: 100%; font-size: 12px; font-family: inherit; padding: 5px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); resize: none; height: auto; min-height: 40px; outline: none; overflow: hidden;
+  }
+  .analysis-input:focus { border-color: var(--border2); }
+  .carrot-row { display: flex; align-items: center; gap: 6px; }
+  .carrot-btn { font-size: 15px; background: none; border: none; cursor: pointer; line-height: 1; padding: 1px; filter: grayscale(1); opacity: .35; transition: all .1s; }
+  .carrot-btn.on { filter: none; opacity: 1; }
+  .carrot-score { font-size: 11px; color: var(--text2); min-width: 50px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0 6px; }
+
+  /* Remind */
+  .remind-area { margin-top: 8px; }
+  .remind-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; }
+  .remind-tag {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    background: var(--gold-bg); border: 1px solid #f0d090; color: #7a5200;
+  }
+  .remind-tag button {
+    background: none; border: none; font-size: 12px; cursor: pointer;
+    color: #a07020; line-height: 1; padding: 0;
+  }
+  .remind-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+  .remind-input-row { display: flex; gap: 6px; }
+  .remind-input-row input {
+    flex: 1; padding: 5px 10px; font-size: 12px; font-family: inherit;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg); color: var(--text); outline: none;
+  }
+  .remind-input-row input:focus { border-color: var(--border2); }
+  .remind-input-row button {
+    font-size: 11px; padding: 5px 10px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: none; cursor: pointer;
+    color: var(--text2); font-family: inherit; white-space: nowrap;
+  }
+  .remind-input-row button:hover { background: var(--surface2); }
+
+  /* People */
+  .person-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .person-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem; cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .person-card:hover { border-color: var(--border2); }
+  .person-card.active { border-color: var(--accent); background: var(--surface2); }
+  .person-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .person-role { font-size: 11px; padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 7px; }
+  .role-감독 { background: #deeeff; color: #0a4a8a; }
+  .role-작가 { background: #dff5e4; color: #1a5c2a; }
+  .role-배우 { background: #eeebff; color: #3a2a9a; }
+  .role-제작사 { background: #fff3d8; color: #7a4a00; }
+  .person-works-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  .detail-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem; margin-top: 1rem;
+  }
+  .detail-name { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+  .detail-sub { font-size: 12px; color: var(--text2); margin-bottom: 1rem; }
+  .detail-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0; border-bottom: 1px solid var(--border);
+  }
+  .detail-row:last-of-type { border-bottom: none; }
+
+  .empty-state {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--text3); font-size: 13px; line-height: 2;
+  }
+  .empty-state .big { font-size: 32px; display: block; margin-bottom: .5rem; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--accent); color: #fff; font-size: 13px; padding: 10px 20px;
+    border-radius: 20px; opacity: 0; transition: all .3s; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Delete btn */
+  .delete-btn {
+    background: none; border: none; font-size: 14px; cursor: pointer;
+    color: var(--text3); padding: 2px 4px; border-radius: 4px;
+    transition: color .15s; flex-shrink: 0; align-self: flex-start; margin-top: 2px;
+  }
+  .delete-btn:hover { color: #c0392b; }
+
+  @media (max-width: 500px) {
+    .app { padding: 1.25rem .9rem 3rem; }
+    .person-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>📓 드라마 기록노트</h1>
+    <p>작품 검색 후 저장 — 감독·작가·배우·OTT·연상 작품 자동 정리</p>
+  </div>
+
+  <!-- API Key Setup -->
+  <div id="key-setup" style="display:none;margin-bottom:1.5rem;padding:1rem 1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+    <div style="font-size:14px;font-weight:700;margin-bottom:4px">🔑 TMDB API 키 설정</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.7">
+      무료 API 키가 필요해요. <a href="https://www.themoviedb.org/settings/api" target="_blank" style="color:var(--gold)">themoviedb.org</a> 회원가입 → 설정 → API → 키 발급 (1분)
+    </div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="key-input" placeholder="API 키 붙여넣기" style="flex:1;padding:8px 12px;font-size:13px;font-family:inherit;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);outline:none">
+      <button class="btn" onclick="saveKey()">저장</button>
+    </div>
+    <div id="key-status" style="font-size:12px;color:var(--text3);margin-top:6px"></div>
+  </div>
+
+  <!-- JSONBin Sync Setup -->
+  <div id="sync-setup" style="display:none;margin-bottom:1rem;padding:1rem 1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+    <div style="font-size:14px;font-weight:700;margin-bottom:4px">☁️ 클라우드 동기화 설정</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.7">
+      <a href="https://jsonbin.io" target="_blank" style="color:var(--gold)">jsonbin.io</a> 가입 → 대시보드 → Master Key 복사 후 붙여넣기 (무료)
+    </div>
+    <div style="display:flex;gap:8px">
+      <input type="password" id="jb-key-input" placeholder="Master Key ($2a$10$...)" style="flex:1;padding:8px 12px;font-size:13px;font-family:inherit;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);outline:none">
+      <button class="btn" onclick="saveJBKey()">연결</button>
+    </div>
+    <div id="jb-status" style="font-size:12px;color:var(--text3);margin-top:6px"></div>
+  </div>
+
+  <div id="sync-bar" style="display:none;margin-bottom:1rem;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2)">
+    <span>☁️ 동기화됨</span>
+    <span id="sync-time" style="color:var(--text3)"></span>
+    <button onclick="syncNow()" style="margin-left:auto;font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;background:none;cursor:pointer;color:var(--text2);font-family:inherit">지금 동기화</button>
+    <button onclick="resetJBKey()" style="font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:20px;background:none;cursor:pointer;color:var(--text3);font-family:inherit">연결 해제</button>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="q" placeholder="작품명 검색 (한국어·영어·일본어 모두 가능)" autocomplete="off">
+    <button class="btn" id="search-btn" onclick="doSearch()">검색</button>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="results" id="results"></div>
+
+  <div id="main-tabs" style="display:none">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('works')">저장한 작품 <span id="works-count"></span></button>
+      <button class="tab" onclick="showTab('people')">인물 · 제작사</button>
+    </div>
+    <div id="sec-works" class="sec active">
+      <div class="ott-filter" id="ott-filter" style="display:none">
+        <span class="ott-filter-label">플랫폼</span>
+        <button class="ott-pill active" onclick="filterOtt('all',this)">전체</button>
+      </div>
+      <div class="works-list" id="works-list"></div>
+    </div>
+    <div id="sec-people" class="sec">
+      <div class="person-grid" id="people-grid"></div>
+      <div id="person-detail"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let KEY = localStorage.getItem('tmdbKey') || '906f56bee27ebeffa94d16ff58d1090e';
+const BASE = 'https://api.themoviedb.org/3';
+const IMG_SM = 'https://image.tmdb.org/t/p/w92';
+const IMG_MD = 'https://image.tmdb.org/t/p/w154';
+
+const OTT = {
+  8:   { name:'Netflix',    color:'#E50914', search:'https://www.netflix.com/search?q=' },
+  337: { name:'Disney+',   color:'#0063E5', search:'https://www.disneyplus.com/search/' },
+  356: { name:'Wavve',     color:'#1A6DFF', search:'https://www.wavve.com/search?searchWord=' },
+  97:  { name:'Tving',     color:'#FF153C', search:'https://www.tving.com/search/all?keyword=' },
+  619: { name:'Tving',     color:'#FF153C', search:'https://www.tving.com/search/all?keyword=' },
+  350: { name:'Apple TV+', color:'#555555', search:'https://tv.apple.com/search?term=' },
+  381: { name:'Max',       color:'#002BE7', search:'https://www.max.com/search?q=' },
+  3:   { name:'Google Play',color:'#4285F4', search:'https://play.google.com/store/search?q=' },
+};
+
+let saved = JSON.parse(localStorage.getItem('dramaNoteStandalone') || '[]');
+let people = {};
+let activeOtt = 'all';
+let searchResults = [];
+
+const $ = id => document.getElementById(id);
+function st(msg) { $('status').textContent = msg; }
+function persist() { localStorage.setItem('dramaNoteStandalone', JSON.stringify(saved)); syncUp(); }
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Search ──────────────────────────────────────────────
+async function doSearch() {
+  const q = $('q').value.trim(); if (!q) return;
+  const btn = $('search-btn'); btn.disabled = true; btn.textContent = '검색 중…';
+  st(''); $('results').innerHTML = '';
+  try {
+    const r = await fetch(`${BASE}/search/multi?api_key=${KEY}&query=${encodeURIComponent(q)}&language=ko-KR`);
+    const d = await r.json();
+    const items = (d.results || []).filter(x => x.media_type === 'tv' || x.media_type === 'movie').slice(0, 6);
+    if (!items.length) { st('검색 결과가 없어요'); return; }
+    searchResults = items;
+    st(items.length + '개 결과');
+    $('results').innerHTML = items.map((item, i) => {
+      const title = item.name || item.title || '';
+      const origTitle = item.original_name || item.original_title || '';
+      const year = (item.first_air_date || item.release_date || '').slice(0, 4);
+      const typeLabel = item.media_type === 'tv' ? '드라마' : '영화';
+      const poster = item.poster_path ? IMG_SM + item.poster_path : '';
+      const already = saved.some(s => s.id === item.id);
+      const sub = [typeLabel, year, origTitle !== title ? origTitle : ''].filter(Boolean).join(' · ');
+      return `<div class="result-item">
+        <div class="r-thumb">${poster ? `<img src="${poster}" alt="">` : '🎬'}</div>
+        <div class="r-info">
+          <div class="r-title">${title}</div>
+          <div class="r-sub">${sub}</div>
+        </div>
+        <button class="r-add" onclick="addWork(${i})" ${already ? 'disabled' : ''}>${already ? '저장됨' : '+ 저장'}</button>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    st('검색 오류: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '검색';
+  }
+}
+
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+// ── Add Work ─────────────────────────────────────────────
+async function addWork(idx) {
+  const item = searchResults[idx]; if (!item) return;
+  st('정보 불러오는 중…');
+  try {
+    const type = item.media_type;
+    const [detail, credits, providers] = await Promise.all([
+      fetch(`${BASE}/${type}/${item.id}?api_key=${KEY}&language=ko-KR`).then(r => r.json()),
+      fetch(`${BASE}/${type}/${item.id}/credits?api_key=${KEY}&language=ko-KR`).then(r => r.json()),
+      fetch(`${BASE}/${type}/${item.id}/watch/providers?api_key=${KEY}`).then(r => r.json()),
+    ]);
+    const title = detail.name || detail.title || '';
+    const origTitle = detail.original_name || detail.original_title || '';
+    const year = (detail.first_air_date || detail.release_date || '').slice(0, 4);
+    const poster = detail.poster_path ? IMG_MD + detail.poster_path : '';
+    const crew = credits.crew || [];
+    const cast = (credits.cast || []).slice(0, 4);
+    const directors = crew.filter(c => c.job === 'Director').slice(0, 2).map(c => ({ id: 'd_' + c.id, name: c.name, role: '감독' }));
+    const writers = crew.filter(c => ['Screenplay','Writer','Story','Novel','Drama','Creator'].includes(c.job)).slice(0, 2).map(c => ({ id: 'w_' + c.id, name: c.name, role: '작가' }));
+    const actors = cast.map(c => ({ id: 'a_' + c.id, name: c.name, role: '배우' }));
+    const nets = (detail.networks || detail.production_companies || []).slice(0, 2).map(n => ({ id: 'c_' + n.id, name: n.name, role: '제작사' }));
+    const allPeople = [...directors, ...writers, ...actors, ...nets];
+    const kr = (providers.results && (providers.results.KR || providers.results.US)) || {};
+    const ottList = (kr.flatrate || []).map(p => OTT[p.provider_id]).filter(Boolean).filter((v,i,a) => a.findIndex(x => x.name === v.name) === i);
+    const work = { id: item.id, type: type === 'tv' ? '드라마' : '영화', title, origTitle, year, poster, people: allPeople, ottList, reminds: [], status: '', stars: 0, memo: '', dateStart: '', dateEnd: '', carrot: 0, analysis: {structure:'', pros:'', cons:'', success:''} };
+    if (!saved.some(s => s.id === work.id)) {
+      saved.unshift(work);
+      persist(); buildPeople(); renderWorks(); renderPeopleGrid(); showMainTabs(); setTimeout(initTextareas, 50);
+      toast(`"${title}" 저장 완료!`);
+      st(''); $('results').innerHTML = ''; $('q').value = '';
+    }
+  } catch(e) { st('정보 불러오기 실패: ' + e.message); }
+}
+
+// ── People ────────────────────────────────────────────────
+function buildPeople() {
+  people = {};
+  saved.forEach(w => (w.people || []).forEach(p => {
+    if (!people[p.id]) people[p.id] = { id: p.id, name: p.name, role: p.role, works: [] };
+    if (!people[p.id].works.find(x => x.id === w.id))
+      people[p.id].works.push({ id: w.id, title: w.title, year: w.year, poster: w.poster });
+  }));
+}
+
+// ── Render Works ──────────────────────────────────────────
+const crewBg  = r => ({ 감독:'#deeeff', 작가:'#dff5e4', 배우:'#eeebff', 제작사:'#fff3d8' }[r] || '#eeebff');
+const crewFg  = r => ({ 감독:'#0a4a8a', 작가:'#1a5c2a', 배우:'#3a2a9a', 제작사:'#7a4a00' }[r] || '#3a2a9a');
+const roleClass = r => 'role-' + r;
+
+function addRemind(workId) {
+  const inp = $('ri_' + workId); const val = inp.value.trim(); if (!val) return;
+  const w = saved.find(s => s.id === workId); if (!w) return;
+  if (!w.reminds) w.reminds = [];
+  if (!w.reminds.includes(val)) { w.reminds.push(val); persist(); }
+  inp.value = ''; renderWorks();
+}
+function removeRemind(workId, tag) {
+  const w = saved.find(s => s.id === workId); if (!w) return;
+  w.reminds = w.reminds.filter(r => r !== tag); persist(); renderWorks();
+}
+function setCarrot(workId, val) {
+  const w = saved.find(s => s.id === workId); if (!w) return;
+  w.carrot = w.carrot === val ? 0 : val; persist(); renderWorks();
+}
+function saveAnalysis(workId) {
+  const w = saved.find(s => s.id === workId); if (!w) return;
+  if (!w.analysis) w.analysis = {};
+  ['structure','pros','cons','success'].forEach(k => {
+    const el = document.getElementById('an_'+k+'_'+workId);
+    if (el) w.analysis[k] = el.value;
+  });
+  persist();
+  const btn = document.getElementById('anbtn_'+workId);
+  if (btn) { btn.textContent = '저장됨 ✓'; setTimeout(() => btn.textContent = '저장', 1200); }
+}
+function saveDate(workId) {
+  const w = saved.find(s => s.id === workId); if (!w) return;
+  const s = document.getElementById('date_start_' + workId);
+  const e = document.getElementById('date_end_' + workId);
+  if (s) w.dateStart = s.value;
+  if (e) w.dateEnd = e.value;
+  persist();
+}
+function setStatus(workId, val) {
+  const w = saved.find(s => s.id === workId); if (!w) return;
+  w.status = w.status === val ? '' : val;
+  persist(); renderWorks();
+}
+function setStars(workId, val) {
+  const w = saved.find(s => s.id === workId); if (!w) return;
+  w.stars = w.stars === val ? 0 : val;
+  persist(); renderWorks();
+}
+function saveMemo(workId) {
+  const w = saved.find(s => s.id === workId); if (!w) return;
+  const el = document.getElementById('memo_' + workId); if (!el) return;
+  w.memo = el.value.trim(); persist();
+  const btn = document.getElementById('memobtn_' + workId);
+  if (btn) { btn.textContent = '저장됨 ✓'; setTimeout(() => { btn.textContent = '저장'; }, 1200); }
+}
+function deleteWork(workId) {
+  if (!confirm('삭제할까요?')) return;
+  saved = saved.filter(s => s.id !== workId);
+  persist(); buildPeople(); renderWorks(); renderPeopleGrid();
+  $('works-count').textContent = '(' + saved.length + ')';
+}
+
+function carrotLabel(n) {
+  if (!n) return '';
+  const labels = ['','🥕 별로','🥕🥕 그럭저럭','🥕🥕🥕 볼만해','🥕🥕🥕🥕 꽤 좋아','🥕🥕🥕🥕🥕 대박'];
+  return labels[n] || '';
+}
+function renderWorks() {
+  // OTT filter pills
+  const ottSet = new Set();
+  saved.forEach(w => (w.ottList || []).forEach(o => ottSet.add(o.name)));
+  const filterEl = $('ott-filter');
+  if (ottSet.size) {
+    filterEl.style.display = 'flex';
+    const existing = new Set([...filterEl.querySelectorAll('[data-ott]')].map(b => b.dataset.ott));
+    ottSet.forEach(name => {
+      if (!existing.has(name)) {
+        const color = Object.values(OTT).find(o => o.name === name)?.color || '#888';
+        const btn = document.createElement('button');
+        btn.className = 'ott-pill'; btn.dataset.ott = name;
+        btn.innerHTML = `<span class="ott-dot" style="background:${color}"></span>${name}`;
+        btn.onclick = () => filterOtt(name, btn);
+        filterEl.appendChild(btn);
+      }
+    });
+  }
+
+  const el = $('works-list');
+  const list = activeOtt === 'all' ? saved : saved.filter(w => (w.ottList || []).some(o => o.name === activeOtt));
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><span class="big">🎬</span>저장된 작품이 없어요<br>위에서 작품을 검색해 추가해보세요</div>';
+    return;
+  }
+  el.innerHTML = list.map(w => {
+    const reminds = w.reminds || [];
+    const origLine = w.origTitle && w.origTitle !== w.title ? `<span class="w-orig">${w.origTitle}</span>` : '';
+    return `<div class="work-item">
+      <div class="w-poster">${w.poster ? `<img src="${w.poster}" alt="">` : '🎬'}</div>
+      <div class="w-info">
+        <div class="w-title">${w.title}${origLine}</div>
+        <div class="w-meta">${[w.type, w.year].filter(Boolean).join(' · ')}</div>
+        <div class="work-body">
+        <div class="work-col-left">
+        <div class="w-crew">
+          ${['감독','작가','배우','제작사'].map(function(role){var grp=(w.people||[]).filter(function(p){return p.role===role;});if(!grp.length)return '';var lb={'감독':'감독','작가':'작가','배우':'출연','제작사':'제작'};return '<div class=\"crew-group\"><span class=\"crew-group-label\">'+lb[role]+'</span>'+grp.map(function(p){return '<button class=\"crew-tag\" style=\"background:'+crewBg(p.role)+';color:'+crewFg(p.role)+'\" onclick=\"focusPerson(\\\'' +p.id.replace(/'/g,"\\'")+'\\\')\">' +p.name+'</button>';}).join('')+'</div>';}).filter(Boolean).join('')}
+        </div>
+        ${(w.ottList || []).length ? `<div class="ott-badges">${w.ottList.map(o => `<a class="ott-badge" href="${o.search}${encodeURIComponent(w.title)}" target="_blank" rel="noopener"><span class="ott-badge-dot" style="background:${o.color}"></span>${o.name}</a>`).join('')}</div>` : ''}
+        <div class="remind-area">
+          ${reminds.length?`<div class="remind-tags">${reminds.map(r=>`<span class="remind-tag">💡 ${r}<button onclick="removeRemind(${w.id},'${r.replace(/'/g,"\'")}')">×</button></span>`).join('')}</div>`:''}
+          <div class="remind-label">💡 보면서 떠오른 작품</div>
+          <div class="remind-input-row">
+            <input type="text" id="ri_${w.id}" placeholder="" onkeydown="if(event.key==='Enter')addRemind(${w.id})">
+            <button onclick="addRemind(${w.id})">+ 연상</button>
+          </div>
+        </div>
+        </div>
+        <div class="work-col-right">
+        <div class="my-record">
+          <div class="record-row">
+            <span class="record-label">시청</span>
+            <div class="status-btns">
+              ${['봤음','보는중','보고싶음'].map(s => `<button class="status-btn ${w.status===s?'active-'+s:''}" onclick="setStatus(${w.id},'${s}')">${s==='봤음'?'✓ 봤음':s==='보는중'?'▶ 보는중':'♡ 보고싶음'}</button>`).join('')}
+            </div>
+          </div>
+          <div class="record-row">
+            <span class="record-label">별점</span>
+            <div class="star-row">${[1,2,3,4,5].map(n => `<button class="star-btn ${(w.stars||0)>=n?'on':''}" onclick="setStars(${w.id},${n})">★</button>`).join('')}</div>
+          </div>
+          <div class="record-row">
+            <span class="record-label">시작일</span>
+            <input type="date" class="date-input" id="date_start_${w.id}" value="${w.dateStart||''}" onchange="saveDate(${w.id})" placeholder="선택 안 해도 됨">
+            <span style="font-size:11px;color:var(--text3)">~</span>
+            <input type="date" class="date-input" id="date_end_${w.id}" value="${w.dateEnd||''}" onchange="saveDate(${w.id})">
+          </div>
+          <textarea class="memo-input" id="memo_${w.id}" placeholder="">${w.memo||''}</textarea>
+          <button class="memo-save-btn" id="memobtn_${w.id}" onclick="saveMemo(${w.id})">저장</button>
+          <hr class="divider">
+          <div class="record-row">
+            <span class="record-label" style="white-space:nowrap;width:auto;margin-right:6px">🥕 로튼캐럿</span>
+            <div class="carrot-row">
+              ${[1,2,3,4,5].map(n => `<button class="carrot-btn ${(w.carrot||0)>=n?'on':''}" onclick="setCarrot(${w.id},${n})">🥕</button>`).join('')}
+            </div>
+          </div>
+          <hr class="divider">
+          <div class="analysis-grid">
+            ${[['structure','구조 분석'],['pros','장점'],['cons','단점'],['success','성공 요인']].map(([k,label]) => `
+            <div class="analysis-item">
+              <span class="analysis-label">${label}</span>
+              <textarea class="analysis-input" id="an_${k}_${w.id}" placeholder="">${(w.analysis&&w.analysis[k])||''}</textarea>
+            </div>`).join('')}
+            <button class="memo-save-btn" id="anbtn_${w.id}" onclick="saveAnalysis(${w.id})" style="margin-top:2px;grid-column:1/-1">저장</button>
+          </div>
+        </div>
+        </div>
+        </div>
+        <div class="remind-area">
+          ${reminds.length ? `<div class="remind-tags">${reminds.map(r => `<span class="remind-tag">💡 ${r}<button onclick="removeRemind(${w.id},'${r.replace(/'/g,"\\'")}')">×</button></span>`).join('')}</div>` : ''}
+          <div class="remind-label">💡 이 작품 보면서 떠오른 작품</div>
+          <div class="remind-input-row">
+            <input type="text" id="ri_${w.id}" placeholder="" onkeydown="if(event.key==='Enter')addRemind(${w.id})">
+            <button onclick="addRemind(${w.id})">+ 연상</button>
+          </div>
+        </div>
+      </div>
+      <button class="delete-btn" onclick="deleteWork(${w.id})" title="삭제">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function filterOtt(val, btn) {
+  activeOtt = val;
+  document.querySelectorAll('.ott-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderWorks();
+}
+
+// ── Render People ─────────────────────────────────────────
+function renderPeopleGrid() {
+  const el = $('people-grid');
+  const sorted = Object.values(people).sort((a, b) => b.works.length - a.works.length);
+  if (!sorted.length) {
+    el.innerHTML = '<div class="empty-state"><span class="big">🎭</span>작품을 저장하면 인물이 자동으로 정리돼요</div>';
+    return;
+  }
+  el.innerHTML = sorted.map(p => `
+    <div class="person-card" id="pc_${p.id.replace(/[^a-zA-Z0-9]/g,'_')}" onclick="showPersonDetail('${p.id.replace(/'/g,"\\'")}')">
+      <div class="person-name">${p.name}</div>
+      <span class="person-role ${roleClass(p.role)}">${p.role}</span>
+      <div class="person-works-text">${p.works.map(w => w.title).join(', ')}</div>
+    </div>`).join('');
+}
+
+function focusPerson(pid) {
+  showTab('people');
+  setTimeout(() => showPersonDetail(pid), 60);
+}
+
+function showPersonDetail(pid) {
+  document.querySelectorAll('.person-card').forEach(c => c.classList.remove('active'));
+  const card = $('pc_' + pid.replace(/[^a-zA-Z0-9]/g, '_'));
+  if (card) { card.classList.add('active'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  const p = people[pid]; if (!p) return;
+  $('person-detail').innerHTML = `
+    <div class="detail-panel">
+      <div class="detail-name">${p.name}</div>
+      <div class="detail-sub">${p.role} · 저장 작품 ${p.works.length}개</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">관련 작품</div>
+      ${p.works.map(w => `
+        <div class="detail-row">
+          <div style="width:28px;height:40px;border-radius:4px;overflow:hidden;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:16px">
+            ${w.poster ? `<img src="${w.poster}" style="width:100%;height:100%;object-fit:cover" alt="">` : '🎬'}
+          </div>
+          <span style="font-size:13px;flex:1">${w.title}</span>
+          <span style="font-size:12px;color:var(--text2)">${w.year || ''}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── Tabs ──────────────────────────────────────────────────
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['works','people'][i] === tab));
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  $('sec-' + tab).classList.add('active');
+  if (tab === 'people') renderPeopleGrid();
+}
+
+function showMainTabs() {
+  $('main-tabs').style.display = 'block';
+  $('works-count').textContent = '(' + saved.length + ')';
+}
+
+// ── Key Management ───────────────────────────────────────
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+function initTextareas() {
+  document.querySelectorAll('textarea').forEach(el => {
+    autoResize(el);
+    el.addEventListener('input', () => autoResize(el));
+  });
+}
+
+// ── JSONBin Sync ──────────────────────────────────────────
+let JB_KEY = localStorage.getItem('jbKey') || '$2a$10$.gXWSTmGAznv8yey.IIMVOArCEA5NRkbNVJuOV4lXf3mh58wEZe1G';
+let JB_BIN = localStorage.getItem('jbBin') || '6a202247da38895dfe80d4d5';
+
+async function saveJBKey() {
+  const key = document.getElementById('jb-key-input').value.trim();
+  if (!key) return;
+  document.getElementById('jb-status').textContent = '연결 중…';
+  try {
+    // 기존 BIN이 있으면 로드, 없으면 새로 생성
+    if (JB_BIN) {
+      JB_KEY = key;
+      localStorage.setItem('jbKey', key);
+      await syncDown();
+    } else {
+      // 새 bin 생성
+      const r = await fetch('https://api.jsonbin.io/v3/b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': key, 'X-Bin-Name': 'drama-note' },
+        body: JSON.stringify({ saved: saved })
+      });
+      const d = await r.json();
+      if (!d.metadata) throw new Error('키가 올바르지 않아요');
+      JB_KEY = key; JB_BIN = d.metadata.id;
+      localStorage.setItem('jbKey', key);
+      localStorage.setItem('jbBin', JB_BIN);
+    }
+    document.getElementById('sync-setup').style.display = 'none';
+    showSyncBar();
+    toast('☁️ 동기화 연결 완료!');
+  } catch(e) {
+    document.getElementById('jb-status').textContent = '❌ ' + e.message;
+  }
+}
+
+async function syncDown() {
+  if (!JB_KEY || !JB_BIN) return;
+  try {
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${JB_BIN}/latest`, {
+      headers: { 'X-Master-Key': JB_KEY }
+    });
+    const d = await r.json();
+    if (d.record && d.record.saved) {
+      saved = d.record.saved;
+      persist();
+      buildPeople(); renderWorks(); renderPeopleGrid();
+      if (saved.length) showMainTabs();
+      setTimeout(initTextareas, 50);
+    }
+    showSyncBar();
+  } catch(e) { console.error('sync down failed', e); }
+}
+
+async function syncUp() {
+  if (!JB_KEY || !JB_BIN) return;
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${JB_BIN}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JB_KEY },
+      body: JSON.stringify({ saved: saved })
+    });
+    showSyncBar();
+  } catch(e) { console.error('sync up failed', e); }
+}
+
+async function syncNow() {
+  document.getElementById('sync-time').textContent = '동기화 중…';
+  await syncDown();
+}
+
+function showSyncBar() {
+  const bar = document.getElementById('sync-bar');
+  bar.style.display = 'flex';
+  const now = new Date();
+  document.getElementById('sync-time').textContent = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0') + ' 기준';
+}
+
+function resetJBKey() {
+  if (!confirm('동기화 연결을 해제할까요? 로컬 데이터는 유지돼요.')) return;
+  localStorage.removeItem('jbKey'); localStorage.removeItem('jbBin');
+  JB_KEY = ''; JB_BIN = '';
+  document.getElementById('sync-bar').style.display = 'none';
+  document.getElementById('sync-setup').style.display = 'block';
+}
+
+function initSyncSetup() {
+  if (JB_KEY && JB_BIN) {
+    syncDown();
+  } else {
+    if (!JB_KEY) document.getElementById('sync-setup').style.display = 'block';
+  }
+}
+
+function initKeySetup() {
+  if (!KEY) {
+    document.getElementById('key-setup').style.display = 'block';
+    document.getElementById('search-btn').disabled = true;
+  }
+}
+async function saveKey() {
+  const val = document.getElementById('key-input').value.trim();
+  if (!val) return;
+  document.getElementById('key-status').textContent = '확인 중…';
+  try {
+    const r = await fetch(`${BASE}/search/multi?api_key=${val}&query=test&language=ko-KR`);
+    const d = await r.json();
+    if (d.results !== undefined) {
+      KEY = val;
+      localStorage.setItem('tmdbKey', val);
+      document.getElementById('key-setup').style.display = 'none';
+      document.getElementById('search-btn').disabled = false;
+      toast('API 키 저장 완료! 이제 검색할 수 있어요 🎉');
+    } else {
+      document.getElementById('key-status').textContent = '❌ 유효하지 않은 키예요. 다시 확인해주세요.';
+    }
+  } catch(e) {
+    document.getElementById('key-status').textContent = '❌ 연결 실패: ' + e.message;
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────
+buildPeople();
+if (saved.length) { renderWorks(); renderPeopleGrid(); showMainTabs(); }
+initKeySetup();
+  initTextareas();
+  initSyncSetup();
+</script>
+</body>
+</html>
