@@ -586,7 +586,7 @@ function buildCarrotHtml(wid, carrot) {
   }).join('');
 }
 function buildAnalysisHtml(wid, analysis) {
-  var fields = [['structure','구조 분석'],['pros','장점'],['cons','단점'],['success','성공 요인'],['reference','레퍼런스 데이터']];
+  var fields = [['structure','구조 분석'],['success','성공 요인'],['pros','장점'],['cons','단점'],['reference','레퍼런스 데이터']];
   return fields.map(function(f) {
     var k=f[0], label=f[1];
     var isRef = k==='reference';
@@ -679,7 +679,7 @@ function renderWorks() {
                 <div class="star-row">${buildStarsHtml(w.id, w.stars)}</div>
               </div>
               <div class="record-row">
-                <span class="record-label" style="white-space:nowrap;width:auto;margin-right:8px">🥕 로튼캐럿</span>
+                <span class="record-label" style="white-space:nowrap;width:auto;margin-right:8px">🥕 로튼캐럿 <span style="font-size:10px;color:var(--text3);font-weight:400">(시장 예상 반응도)</span></span>
                 <div class="carrot-row">
                   ${buildCarrotHtml(w.id, w.carrot)}
                 </div>
