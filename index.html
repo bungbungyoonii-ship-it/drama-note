@@ -121,9 +121,10 @@
   /* Work cards */
   .works-list { display: flex; flex-direction: column; }
   .work-item {
-    display: flex; align-items: flex-start; gap: 12px;
+    display: flex; flex-direction: column; gap: 0;
     padding: 14px 0; border-bottom: 1px solid var(--border);
   }
+  .work-item-top { display: flex; align-items: flex-start; gap: 12px; }
   .work-item:last-child { border-bottom: none; }
   .w-poster {
     width: 48px; height: 68px; border-radius: 6px;
@@ -164,7 +165,7 @@
   .work-body { display: flex; gap: 14px; margin-top: 6px; }
   .work-col-left { flex: 1.2; min-width: 0; }
   .work-col-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-  .work-full { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .work-full { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); width: 100%; }
   /* My Record */
   .my-record { margin-top: 9px; display: flex; flex-direction: column; gap: 6px; }
   .record-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -577,6 +578,7 @@ function renderWorks() {
     const reminds = w.reminds || [];
     const origLine = w.origTitle && w.origTitle !== w.title ? `<span class="w-orig">${w.origTitle}</span>` : '';
     return `<div class="work-item">
+      <div class="work-item-top">
       <div class="w-poster">${w.poster ? `<img src="${w.poster}" alt="">` : '🎬'}</div>
       <div class="w-info">
         <div class="w-title">${w.title}${origLine}</div>
@@ -587,9 +589,15 @@ function renderWorks() {
           ${['감독','작가','배우','제작사'].map(function(role){var grp=(w.people||[]).filter(function(p){return p.role===role;});if(!grp.length)return '';var lb={'감독':'감독','작가':'작가','배우':'출연','제작사':'제작'};return '<div class=\"crew-group\"><span class=\"crew-group-label\">'+lb[role]+'</span>'+grp.map(function(p){return '<button class=\"crew-tag\" style=\"background:'+crewBg(p.role)+';color:'+crewFg(p.role)+'\" onclick=\"focusPerson(\\\'' +p.id.replace(/'/g,"\\'")+'\\\')\">' +p.name+'</button>';}).join('')+'</div>';}).filter(Boolean).join('')}
         </div>
         ${(w.ottList || []).length ? `<div class="ott-badges">${w.ottList.map(o => `<a class="ott-badge" href="${o.search}${encodeURIComponent(w.title)}" target="_blank" rel="noopener"><span class="ott-badge-dot" style="background:${o.color}"></span>${o.name}</a>`).join('')}</div>` : ''}
+        <div class="record-row" style="margin-top:8px">
+          <span class="record-label" style="white-space:nowrap;width:auto;margin-right:8px">🥕 로튼캐럿</span>
+          <div class="carrot-row">
+            ${[1,2,3,4,5].map(n => `<button class="carrot-btn ${(w.carrot||0)>=n?'on':''}" onclick="setCarrot(${w.id},${n})">🥕</button>`).join('')}
+          </div>
+        </div>
         <div class="remind-area">
           ${reminds.length?`<div class="remind-tags">${reminds.map(r=>`<span class="remind-tag">💡 ${r}<button onclick="removeRemind(${w.id},'${r.replace(/'/g,"\'")}')">×</button></span>`).join('')}</div>`:''}
-          <div class="remind-label">💡 보면서 떠오른 작품</div>
+          <div class="remind-label">💡 보면서 떠오른 아이디어</div>
           <div class="remind-input-row">
             <input type="text" id="ri_${w.id}" placeholder="" onkeydown="if(event.key==='Enter')addRemind(${w.id})">
             <button onclick="addRemind(${w.id})">+ 연상</button>
@@ -635,9 +643,15 @@ function renderWorks() {
         </div>
         </div>
         </div>
+        <div class="record-row" style="margin-top:8px">
+          <span class="record-label" style="white-space:nowrap;width:auto;margin-right:8px">🥕 로튼캐럿</span>
+          <div class="carrot-row">
+            ${[1,2,3,4,5].map(n => `<button class="carrot-btn ${(w.carrot||0)>=n?'on':''}" onclick="setCarrot(${w.id},${n})">🥕</button>`).join('')}
+          </div>
+        </div>
         <div class="remind-area">
           ${reminds.length ? `<div class="remind-tags">${reminds.map(r => `<span class="remind-tag">💡 ${r}<button onclick="removeRemind(${w.id},'${r.replace(/'/g,"\\'")}')">×</button></span>`).join('')}</div>` : ''}
-          <div class="remind-label">💡 이 작품 보면서 떠오른 작품</div>
+          <div class="remind-label">💡 보면서 떠오른 아이디어</div>
           <div class="remind-input-row">
             <input type="text" id="ri_${w.id}" placeholder="" onkeydown="if(event.key==='Enter')addRemind(${w.id})">
             <button onclick="addRemind(${w.id})">+ 연상</button>
