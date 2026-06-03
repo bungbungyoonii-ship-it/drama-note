@@ -631,9 +631,9 @@ function renderWorks() {
           <button class="memo-save-btn" id="ideabtn_${w.id}" onclick="saveIdea(${w.id})" style="margin-bottom:10px">저장</button>
           <div class="analysis-grid">
             ${[['structure','구조 분석'],['pros','장점'],['cons','단점'],['success','성공 요인'],['reference','레퍼런스 데이터']].map(([k,label]) => `
-            <div class="analysis-item" style="${k==='reference'?'grid-column:1/-1':''}">
+            <div class="analysis-item" ${k==='reference'?'style=\"grid-column:1/-1\"':''}>
               <span class="analysis-label">${label}</span>
-              <textarea class="analysis-input" id="an_${k}_${w.id}" placeholder="" style="${k==='reference'?'min-height:56px':''}">${(w.analysis&&w.analysis[k])||''}</textarea>
+              <textarea class="analysis-input" id="an_${k}_${w.id}" placeholder="" ${k==='reference'?'style=\"min-height:56px\"':''}>${(w.analysis&&w.analysis[k])||''}</textarea>
             </div>`).join('')}
             <button class="memo-save-btn" id="anbtn_${w.id}" onclick="saveAnalysis(${w.id})" style="margin-top:2px;grid-column:1/-1">저장</button>
           </div>
