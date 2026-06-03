@@ -109,6 +109,13 @@
   /* OTT filter */
   .ott-filter { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
   .ott-filter-label { font-size: 12px; color: var(--text2); }
+  .sort-select {
+    font-size: 12px; padding: 4px 10px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text2); cursor: pointer; font-family: inherit; outline: none;
+    margin-left: auto;
+  }
+  .sort-select:focus { border-color: var(--border2); }
   .ott-pill {
     display: flex; align-items: center; gap: 5px;
     font-size: 12px; padding: 4px 10px; border-radius: 20px;
@@ -355,6 +362,15 @@
       <div class="ott-filter" id="ott-filter" style="display:none">
         <span class="ott-filter-label">플랫폼</span>
         <button class="ott-pill active" onclick="filterOtt('all',this)">전체</button>
+        <select class="sort-select" id="sort-select" onchange="renderWorks()">
+          <option value="default">최근 저장순</option>
+          <option value="stars_desc">별점 높은순</option>
+          <option value="stars_asc">별점 낮은순</option>
+          <option value="carrot_desc">로튼캐럿 높은순</option>
+          <option value="carrot_asc">로튼캐럿 낮은순</option>
+          <option value="date_desc">시청일 최신순</option>
+          <option value="date_asc">시청일 오래된순</option>
+        </select>
       </div>
       <div class="works-list" id="works-list"></div>
     </div>
@@ -646,7 +662,14 @@ function renderWorks() {
   }
 
   const el = $('works-list');
-  const list = activeOtt === 'all' ? saved : saved.filter(w => (w.ottList || []).some(o => o.name === activeOtt));
+  let list = activeOtt === 'all' ? [...saved] : saved.filter(w => (w.ottList || []).some(o => o.name === activeOtt));
+  const sortVal = document.getElementById('sort-select') ? document.getElementById('sort-select').value : 'default';
+  if (sortVal === 'stars_desc') list.sort((a,b) => (b.stars||0)-(a.stars||0));
+  else if (sortVal === 'stars_asc') list.sort((a,b) => (a.stars||0)-(b.stars||0));
+  else if (sortVal === 'carrot_desc') list.sort((a,b) => (b.carrot||0)-(a.carrot||0));
+  else if (sortVal === 'carrot_asc') list.sort((a,b) => (a.carrot||0)-(b.carrot||0));
+  else if (sortVal === 'date_desc') list.sort((a,b) => (b.dateStart||'').localeCompare(a.dateStart||''));
+  else if (sortVal === 'date_asc') list.sort((a,b) => (a.dateStart||'').localeCompare(b.dateStart||''));
   if (!list.length) {
     el.innerHTML = '<div class="empty-state"><span class="big">🎬</span>저장된 작품이 없어요<br>위에서 작품을 검색해 추가해보세요</div>';
     return;
