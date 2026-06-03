@@ -578,60 +578,55 @@ function renderWorks() {
     const reminds = w.reminds || [];
     const origLine = w.origTitle && w.origTitle !== w.title ? `<span class="w-orig">${w.origTitle}</span>` : '';
     return `<div class="work-item">
-      <div class="work-item-top">
       <div class="w-poster">${w.poster ? `<img src="${w.poster}" alt="">` : '🎬'}</div>
       <div class="w-info">
         <div class="w-title">${w.title}${origLine}</div>
         <div class="w-meta">${[w.type, w.year].filter(Boolean).join(' · ')}</div>
         <div class="work-body">
-        <div class="work-col-left">
-        <div class="w-crew">
-          ${['감독','작가','배우','제작사'].map(function(role){var grp=(w.people||[]).filter(function(p){return p.role===role;});if(!grp.length)return '';var lb={'감독':'감독','작가':'작가','배우':'출연','제작사':'제작'};return '<div class=\"crew-group\"><span class=\"crew-group-label\">'+lb[role]+'</span>'+grp.map(function(p){return '<button class=\"crew-tag\" style=\"background:'+crewBg(p.role)+';color:'+crewFg(p.role)+'\" onclick=\"focusPerson(\\\'' +p.id.replace(/'/g,"\\'")+'\\\')\">' +p.name+'</button>';}).join('')+'</div>';}).filter(Boolean).join('')}
-        </div>
-        ${(w.ottList || []).length ? `<div class="ott-badges">${w.ottList.map(o => `<a class="ott-badge" href="${o.search}${encodeURIComponent(w.title)}" target="_blank" rel="noopener"><span class="ott-badge-dot" style="background:${o.color}"></span>${o.name}</a>`).join('')}</div>` : ''}
-        <div class="record-row" style="margin-top:8px">
-          <span class="record-label" style="white-space:nowrap;width:auto;margin-right:8px">🥕 로튼캐럿</span>
-          <div class="carrot-row">
-            ${[1,2,3,4,5].map(n => `<button class="carrot-btn ${(w.carrot||0)>=n?'on':''}" onclick="setCarrot(${w.id},${n})">🥕</button>`).join('')}
-          </div>
-        </div>
-        <div class="remind-area">
-          ${reminds.length?`<div class="remind-tags">${reminds.map(r=>`<span class="remind-tag">💡 ${r}<button onclick="removeRemind(${w.id},'${r.replace(/'/g,"\'")}')">×</button></span>`).join('')}</div>`:''}
-          <div class="remind-label">💡 보면서 떠오른 아이디어</div>
-          <div class="remind-input-row">
-            <input type="text" id="ri_${w.id}" placeholder="" onkeydown="if(event.key==='Enter')addRemind(${w.id})">
-            <button onclick="addRemind(${w.id})">+ 연상</button>
-          </div>
-        </div>
-        </div>
-        <div class="work-col-right">
-        <div class="my-record">
-          <div class="record-row">
-            <span class="record-label">시청</span>
-            <div class="status-btns">
-              ${['봤음','보는중','보고싶음'].map(s => `<button class="status-btn ${w.status===s?'active-'+s:''}" onclick="setStatus(${w.id},'${s}')">${s==='봤음'?'✓ 봤음':s==='보는중'?'▶ 보는중':'♡ 보고싶음'}</button>`).join('')}
+          <div class="work-col-left">
+            <div class="w-crew">
+              ${['감독','작가','배우','제작사'].map(function(role){var grp=(w.people||[]).filter(function(p){return p.role===role;});if(!grp.length)return '';var lb={'감독':'감독','작가':'작가','배우':'출연','제작사':'제작'};return '<div class=\"crew-group\"><span class=\"crew-group-label\">'+lb[role]+'</span>'+grp.map(function(p){return '<button class=\"crew-tag\" style=\"background:'+crewBg(p.role)+';color:'+crewFg(p.role)+'\" onclick=\"focusPerson(\\''+p.id.replace(/'/g,"\'")+'\\')\">' +p.name+'</button>';}).join('')+'</div>';}).filter(Boolean).join('')}
+            </div>
+            ${(w.ottList || []).length ? `<div class="ott-badges">${w.ottList.map(o => `<a class="ott-badge" href="${o.search}${encodeURIComponent(w.title)}" target="_blank" rel="noopener"><span class="ott-badge-dot" style="background:${o.color}"></span>${o.name}</a>`).join('')}</div>` : ''}
+            <div class="record-row" style="margin-top:8px">
+              <span class="record-label" style="white-space:nowrap;width:auto;margin-right:8px">🥕 로튼캐럿</span>
+              <div class="carrot-row">
+                ${[1,2,3,4,5].map(n => `<button class="carrot-btn ${(w.carrot||0)>=n?'on':''}" onclick="setCarrot(${w.id},${n})">🥕</button>`).join('')}
+              </div>
+            </div>
+            <div class="remind-area">
+              ${reminds.length ? `<div class="remind-tags">${reminds.map(r => `<span class="remind-tag">💡 ${r}<button onclick="removeRemind(${w.id},'${r.replace(/'/g,"\'")}')">×</button></span>`).join('')}</div>` : ''}
+              <div class="remind-label">💡 보면서 떠오른 아이디어</div>
+              <div class="remind-input-row">
+                <input type="text" id="ri_${w.id}" placeholder="" onkeydown="if(event.key==='Enter')addRemind(${w.id})">
+                <button onclick="addRemind(${w.id})">+ 연상</button>
+              </div>
             </div>
           </div>
-          <div class="record-row">
-            <span class="record-label">별점</span>
-            <div class="star-row">${[1,2,3,4,5].map(n => `<button class="star-btn ${(w.stars||0)>=n?'on':''}" onclick="setStars(${w.id},${n})">★</button>`).join('')}</div>
-          </div>
-          <div class="record-row">
-            <span class="record-label">시작일</span>
-            <input type="date" class="date-input" id="date_start_${w.id}" value="${w.dateStart||''}" onchange="saveDate(${w.id})" placeholder="선택 안 해도 됨">
-            <span style="font-size:11px;color:var(--text3)">~</span>
-            <input type="date" class="date-input" id="date_end_${w.id}" value="${w.dateEnd||''}" onchange="saveDate(${w.id})">
-          </div>
-          <textarea class="memo-input" id="memo_${w.id}" placeholder="">${w.memo||''}</textarea>
-          <button class="memo-save-btn" id="memobtn_${w.id}" onclick="saveMemo(${w.id})">저장</button>
-          <hr class="divider">
-          <div class="record-row">
-            <span class="record-label" style="white-space:nowrap;width:auto;margin-right:6px">🥕 로튼캐럿</span>
-            <div class="carrot-row">
-              ${[1,2,3,4,5].map(n => `<button class="carrot-btn ${(w.carrot||0)>=n?'on':''}" onclick="setCarrot(${w.id},${n})">🥕</button>`).join('')}
+          <div class="work-col-right">
+            <div class="my-record">
+              <div class="record-row">
+                <span class="record-label">시청</span>
+                <div class="status-btns">
+                  ${['봤음','보는중','보고싶음'].map(s => `<button class="status-btn ${w.status===s?'active-'+s:''}" onclick="setStatus(${w.id},'${s}')">${s==='봤음'?'✓ 봤음':s==='보는중'?'▶ 보는중':'♡ 보고싶음'}</button>`).join('')}
+                </div>
+              </div>
+              <div class="record-row">
+                <span class="record-label">별점</span>
+                <div class="star-row">${[1,2,3,4,5].map(n => `<button class="star-btn ${(w.stars||0)>=n?'on':''}" onclick="setStars(${w.id},${n})">★</button>`).join('')}</div>
+              </div>
+              <div class="record-row">
+                <span class="record-label">시작일</span>
+                <input type="date" class="date-input" id="date_start_${w.id}" value="${w.dateStart||''}" onchange="saveDate(${w.id})">
+                <span style="font-size:11px;color:var(--text3)">~</span>
+                <input type="date" class="date-input" id="date_end_${w.id}" value="${w.dateEnd||''}" onchange="saveDate(${w.id})">
+              </div>
+              <textarea class="memo-input" id="memo_${w.id}" placeholder="">${w.memo||''}</textarea>
+              <button class="memo-save-btn" id="memobtn_${w.id}" onclick="saveMemo(${w.id})">저장</button>
             </div>
           </div>
-          <hr class="divider">
+        </div>
+        <div class="work-full">
           <div class="analysis-grid">
             ${[['structure','구조 분석'],['pros','장점'],['cons','단점'],['success','성공 요인']].map(([k,label]) => `
             <div class="analysis-item">
@@ -639,22 +634,6 @@ function renderWorks() {
               <textarea class="analysis-input" id="an_${k}_${w.id}" placeholder="">${(w.analysis&&w.analysis[k])||''}</textarea>
             </div>`).join('')}
             <button class="memo-save-btn" id="anbtn_${w.id}" onclick="saveAnalysis(${w.id})" style="margin-top:2px;grid-column:1/-1">저장</button>
-          </div>
-        </div>
-        </div>
-        </div>
-        <div class="record-row" style="margin-top:8px">
-          <span class="record-label" style="white-space:nowrap;width:auto;margin-right:8px">🥕 로튼캐럿</span>
-          <div class="carrot-row">
-            ${[1,2,3,4,5].map(n => `<button class="carrot-btn ${(w.carrot||0)>=n?'on':''}" onclick="setCarrot(${w.id},${n})">🥕</button>`).join('')}
-          </div>
-        </div>
-        <div class="remind-area">
-          ${reminds.length ? `<div class="remind-tags">${reminds.map(r => `<span class="remind-tag">💡 ${r}<button onclick="removeRemind(${w.id},'${r.replace(/'/g,"\\'")}')">×</button></span>`).join('')}</div>` : ''}
-          <div class="remind-label">💡 보면서 떠오른 아이디어</div>
-          <div class="remind-input-row">
-            <input type="text" id="ri_${w.id}" placeholder="" onkeydown="if(event.key==='Enter')addRemind(${w.id})">
-            <button onclick="addRemind(${w.id})">+ 연상</button>
           </div>
         </div>
       </div>
