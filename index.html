@@ -375,6 +375,20 @@
       <div class="works-list" id="works-list"></div>
     </div>
     <div id="sec-people" class="sec">
+      <div class="ott-filter" style="margin-bottom:1rem">
+        <span class="ott-filter-label">역할</span>
+        <button class="ott-pill active" onclick="filterPeople('all',this)">전체</button>
+        <button class="ott-pill" onclick="filterPeople('감독',this)">감독</button>
+        <button class="ott-pill" onclick="filterPeople('작가',this)">작가</button>
+        <button class="ott-pill" onclick="filterPeople('배우',this)">배우</button>
+        <button class="ott-pill" onclick="filterPeople('제작사',this)">제작사</button>
+        <select class="sort-select" id="people-sort" onchange="renderPeopleGrid()">
+          <option value="works_desc">작품 많은순</option>
+          <option value="works_asc">작품 적은순</option>
+          <option value="name_asc">이름순 (가나다)</option>
+          <option value="name_desc">이름순 (역순)</option>
+        </select>
+      </div>
       <div class="person-grid" id="people-grid"></div>
       <div id="person-detail"></div>
     </div>
@@ -402,6 +416,7 @@ const OTT = {
 let saved = JSON.parse(localStorage.getItem('dramaNoteStandalone') || '[]');
 let people = {};
 let activeOtt = 'all';
+let activePeopleRole = 'all';
 let searchResults = [];
 
 const $ = id => document.getElementById(id);
@@ -749,9 +764,22 @@ function filterOtt(val, btn) {
 }
 
 // ── Render People ─────────────────────────────────────────
+function filterPeople(role, btn) {
+  activePeopleRole = role;
+  document.querySelectorAll('#sec-people .ott-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPeopleGrid();
+  document.getElementById('person-detail').innerHTML = '';
+}
 function renderPeopleGrid() {
   const el = $('people-grid');
-  const sorted = Object.values(people).sort((a, b) => b.works.length - a.works.length);
+  const sortP = document.getElementById('people-sort') ? document.getElementById('people-sort').value : 'works_desc';
+  let sorted = Object.values(people);
+  if (activePeopleRole !== 'all') sorted = sorted.filter(p => p.role === activePeopleRole);
+  if (sortP === 'works_desc') sorted.sort((a,b) => b.works.length - a.works.length);
+  else if (sortP === 'works_asc') sorted.sort((a,b) => a.works.length - b.works.length);
+  else if (sortP === 'name_asc') sorted.sort((a,b) => a.name.localeCompare(b.name, 'ko'));
+  else if (sortP === 'name_desc') sorted.sort((a,b) => b.name.localeCompare(a.name, 'ko'));
   if (!sorted.length) {
     el.innerHTML = '<div class="empty-state"><span class="big">🎭</span>작품을 저장하면 인물이 자동으로 정리돼요</div>';
     return;
